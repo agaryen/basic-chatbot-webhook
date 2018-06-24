@@ -1,4 +1,10 @@
+import argparse
 from flask import Flask, jsonify, request, abort
+from helpers import send_message
+
+parser = argparse.ArgumentParser()
+parser.add_argument('token')
+args = parser.parse_args()
 
 app = Flask(__name__)
 
@@ -23,7 +29,11 @@ def webhookPOST():
 
     if body['object'] == 'page':
         for entry in body['entry']:
-            print(entry['messaging'][0])
+            event = entry['messaging'][0]
+            try:
+                send_message(args.token, event['sender']['id'], 'Hello ! You sent: "%s"' % event['message']['text'])
+            except KeyError:
+                pass
         return 'EVENT_RECEIVED', 200
     else:
         abort(404)
